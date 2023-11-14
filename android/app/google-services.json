@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "558100884881",
+    "project_id": "macstore-73d62",
+    "storage_bucket": "macstore-73d62.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558100884881:android:013960d2a4d5fc48e83e30",
+        "android_client_info": {
+          "package_name": "com.macaulayfamous.macstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbMnAG9TmAbeZJxzKi4K8qJrKbtyyR2f8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
