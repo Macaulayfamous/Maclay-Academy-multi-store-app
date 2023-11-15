@@ -152,7 +152,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                   style: GoogleFonts.getFont(
                                     'Lato',
                                     color: const Color(0xFF3C55EF),
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1,
                                   ),
@@ -162,7 +162,7 @@ class _ProductDetailState extends State<ProductDetail> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  'Unisex',
+                                  widget.productData['category'],
                                   style: GoogleFonts.getFont(
                                     'Lato',
                                     color: const Color(0xFF9A9998),
@@ -192,7 +192,7 @@ class _ProductDetailState extends State<ProductDetail> {
                           style: GoogleFonts.getFont(
                             'Lato',
                             color: const Color(0xFF3C55EF),
-                            fontSize: 24,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
                           ),
