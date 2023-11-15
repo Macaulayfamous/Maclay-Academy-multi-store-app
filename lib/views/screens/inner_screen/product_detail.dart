@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:macstore/provider/product_provider.dart';
 
-class ProductDetail extends StatefulWidget {
+class ProductDetail extends ConsumerStatefulWidget {
   final dynamic productData;
 
   const ProductDetail({Key? key, this.productData}) : super(key: key);
@@ -11,7 +13,7 @@ class ProductDetail extends StatefulWidget {
   _ProductDetailState createState() => _ProductDetailState();
 }
 
-class _ProductDetailState extends State<ProductDetail> {
+class _ProductDetailState extends ConsumerState<ProductDetail> {
   late ValueNotifier<String> descriptionNotifier;
   bool showFullDescription = false;
 
@@ -24,6 +26,9 @@ class _ProductDetailState extends State<ProductDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final _cartProvider = ref.read(cartProvider.notifier);
+    final cartItem = ref.watch(cartProvider);
+    final isInCart = cartItem.containsKey(widget.productData['productId']);
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -107,7 +112,7 @@ class _ProductDetailState extends State<ProductDetail> {
                       ),
                       Center(
                         child: Container(
-                          height: 200,
+                          height: 300,
                           child: PageView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount:
@@ -152,13 +157,13 @@ class _ProductDetailState extends State<ProductDetail> {
                                   style: GoogleFonts.getFont(
                                     'Lato',
                                     color: const Color(0xFF3C55EF),
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 1,
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              // const SizedBox(height: 8),
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: Text(
@@ -166,7 +171,7 @@ class _ProductDetailState extends State<ProductDetail> {
                                   style: GoogleFonts.getFont(
                                     'Lato',
                                     color: const Color(0xFF9A9998),
-                                    fontSize: 14,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 1,
                                   ),
@@ -187,12 +192,12 @@ class _ProductDetailState extends State<ProductDetail> {
                         height: 78,
                         alignment: const Alignment(0, -0.59),
                         child: Text(
-                          '\$${double.parse(widget.productData['discountPrice']).toStringAsFixed(2)}',
+                          '\$${widget.productData['discountPrice'].toStringAsFixed(2)}',
                           textAlign: TextAlign.right,
                           style: GoogleFonts.getFont(
                             'Lato',
                             color: const Color(0xFF3C55EF),
-                            fontSize: 18,
+                            fontSize: 17,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1,
                           ),
@@ -400,33 +405,52 @@ class _ProductDetailState extends State<ProductDetail> {
       ),
       bottomSheet: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Container(
-          width: 386,
-          height: 48,
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3B54EE),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                left: 148,
-                top: 17,
-                child: Text(
-                  'ADD TO CART',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.getFont(
-                    'Lato',
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
+        child: InkWell(
+          onTap: isInCart
+              ? null
+              : () {
+                  _cartProvider.addProductToCart(
+                    productName: widget.productData['productName'],
+                    productPrice: widget.productData['price'],
+                    catgoryName: widget.productData['category'],
+                    imageUrl: widget.productData['productImages'],
+                    quantity: 1,
+                    productId: widget.productData['productId'],
+                    productSize: 'X',
+                    discount: widget.productData['discountPrice'],
+                    description: widget.productData['description'],
+                  );
+
+                  print(_cartProvider.getCartItems.values.first.productName);
+                },
+          child: Container(
+            width: 386,
+            height: 48,
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(
+              color: isInCart ? Colors.grey : const Color(0xFF3B54EE),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: 148,
+                  top: 17,
+                  child: Text(
+                    'ADD TO CART',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.getFont(
+                      'Lato',
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),

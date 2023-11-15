@@ -101,7 +101,7 @@ class PopularModel extends StatelessWidget {
             Align(
               alignment: const Alignment(-0.14, 0),
               child: Text(
-                '\$' + popularProduct['price'],
+                '\$' + popularProduct['discountPrice'].toString(),
                 textAlign: TextAlign.right,
                 style: GoogleFonts.getFont(
                   'Lato',

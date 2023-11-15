@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:macstore/views/screens/home_Screen.dart';
+import 'package:macstore/views/screens/widgets/cart_product_widget.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -16,9 +17,7 @@ class _MainScreenState extends State<MainScreen> {
     Center(
       child: Text('Favorite'),
     ),
-    Center(
-      child: Text('Cart'),
-    ),
+    CartScreenProduct(),
     Center(
       child: Text('Account'),
     ),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:macstore/controllers/banners_controller.dart';
 import 'package:macstore/controllers/category_controller.dart';
@@ -19,7 +20,7 @@ void main() async {
           projectId: 'macstore-73d62',
         ))
       : await Firebase.initializeApp();
-  runApp(const MyApp());
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
