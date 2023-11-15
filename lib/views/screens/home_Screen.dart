@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:macstore/views/screens/widgets/banner_widget.dart';
 import 'package:macstore/views/screens/widgets/category_item.dart';
 import 'package:macstore/views/screens/widgets/header.dart';
+import 'package:macstore/views/screens/widgets/popularProduct_models.dart';
+import 'package:macstore/views/screens/widgets/popular_products.dart';
 import 'package:macstore/views/screens/widgets/recommended_product.dart';
 import 'package:macstore/views/screens/widgets/reuse_text_widget.dart';
 
@@ -35,6 +37,7 @@ class HomeScreen extends StatelessWidget {
                 title: 'Popular',
                 subtitle: 'View all',
               ),
+              PopularProducts(),
             ],
           ),
         ),

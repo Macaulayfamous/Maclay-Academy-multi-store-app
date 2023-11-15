@@ -1,14 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:macstore/views/screens/widgets/product_models.dart';
+import 'package:macstore/views/screens/widgets/popularProduct_models.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PopularProducts extends StatelessWidget {
-  const PopularProducts({super.key});
+  const PopularProducts({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    final Stream<QuerySnapshot> _productsStream =
-        FirebaseFirestore.instance.collection('products').snapshots();
+    final Stream<QuerySnapshot> _productsStream = FirebaseFirestore.instance
+        .collection(
+          'products',
+        )
+        .where(
+          'popular',
+          isEqualTo: true,
+        )
+        .snapshots();
 
     return StreamBuilder<QuerySnapshot>(
       stream: _productsStream,
@@ -22,16 +30,20 @@ class PopularProducts extends StatelessWidget {
         }
 
         return Container(
-          height: 300,
-          child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final productData = snapshot.data!.docs[index];
-                return ProductModel(
-                  productData: productData,
-                );
-              }),
+          child: GridView.count(
+            physics: ScrollPhysics(),
+            shrinkWrap: true,
+            crossAxisCount: 3,
+            mainAxisSpacing: 15,
+            crossAxisSpacing: 15,
+            childAspectRatio: 300 / 500,
+            children: List.generate(snapshot.data!.size, (index) {
+              final popularProduct = snapshot.data!.docs[index];
+              return PopularModel(
+                popularProduct: popularProduct,
+              );
+            }),
+          ),
         );
       },
     );

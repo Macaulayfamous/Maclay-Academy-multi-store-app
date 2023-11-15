@@ -3,12 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:macstore/views/screens/widgets/product_models.dart';
 
 class RecommendedProduct extends StatelessWidget {
-  const RecommendedProduct({super.key});
+  const RecommendedProduct({Key? key});
 
   @override
   Widget build(BuildContext context) {
-    final Stream<QuerySnapshot> _productsStream =
-        FirebaseFirestore.instance.collection('products').snapshots();
+    final Stream<QuerySnapshot> _productsStream = FirebaseFirestore.instance
+        .collection(
+          'products',
+        )
+        .where(
+          'recommened',
+          isEqualTo: true,
+        )
+        .snapshots();
 
     return StreamBuilder<QuerySnapshot>(
       stream: _productsStream,
@@ -22,17 +29,17 @@ class RecommendedProduct extends StatelessWidget {
         }
 
         return Container(
-          height: 300,
+          height: 250,
           child: ListView.builder(
-              shrinkWrap: true,
-              
-              itemCount: snapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final productData = snapshot.data!.docs[index];
-                return ProductModel(
-                  productData: productData,
-                );
-              }),
+            scrollDirection: Axis.horizontal,
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) {
+              final productData = snapshot.data!.docs[index];
+              return ProductModel(
+                productData: productData,
+              );
+            },
+          ),
         );
       },
     );
