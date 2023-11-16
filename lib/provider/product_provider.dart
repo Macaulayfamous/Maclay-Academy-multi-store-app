@@ -30,26 +30,61 @@ class CartNotifier extends StateNotifier<Map<String, CartModel>> {
           quantity: state[productId]!.quantity + 1,
           imageUrl: state[productId]!.imageUrl,
           productSize: state[productId]!.productSize,
-        discount: state[productId]!.discount,
-        description: state[productId]!.description,
+          discount: state[productId]!.discount,
+          description: state[productId]!.description,
         )
       };
     } else {
       state = {
         ...state,
         productId: CartModel(
-            productName: productName,
-            productPrice: productPrice,
-            catgoryName: catgoryName,
-            imageUrl: imageUrl,
-            quantity: quantity,
-            productId: productId,
-            productSize: productSize,
-            discount:  discount,
-            description: description,
-            )
+          productName: productName,
+          productPrice: productPrice,
+          catgoryName: catgoryName,
+          imageUrl: imageUrl,
+          quantity: quantity,
+          productId: productId,
+          productSize: productSize,
+          discount: discount,
+          description: description,
+        )
       };
     }
+  }
+
+  void decrementItem(String productId) {
+    if (state.containsKey(productId)) {
+      state[productId]!.quantity--;
+
+      ///notify listeners that the state has changed
+      ///
+      state = {...state};
+    }
+  }
+
+  void removeItem(String productId) {
+    state.remove(productId);
+
+    state = {...state};
+  }
+
+  void incrementItem(String productId) {
+    if (state.containsKey(productId)) {
+      state[productId]!.quantity++;
+
+      ///notify listeners that the state has changed
+      ///
+      state = {...state};
+    }
+  }
+
+  double calculateTotalAmount() {
+    double totalAmount = 0.0;
+    state.forEach((productId, cartItem) {
+      totalAmount += cartItem.quantity * cartItem.discount;
+    });
+
+    return totalAmount;
   }
 
   Map<String, CartModel> get getCartItems => state;

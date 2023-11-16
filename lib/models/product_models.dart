@@ -3,7 +3,7 @@ class CartModel {
   final num productPrice;
   final String catgoryName;
   final List imageUrl;
-  final int quantity;
+  int quantity;
   final String productId;
   final String productSize;
   final num discount;
