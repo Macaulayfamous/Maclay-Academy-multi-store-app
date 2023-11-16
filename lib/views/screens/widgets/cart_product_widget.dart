@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import 'package:badges/badges.dart' as badges;
 import 'package:macstore/provider/product_provider.dart';
+import 'package:macstore/views/screens/inner_screen/checkout_screen.dart';
 
 class CartScreenProduct extends ConsumerStatefulWidget {
   const CartScreenProduct({Key? key});
@@ -472,31 +473,38 @@ class _CartScreenProductState extends ConsumerState<CartScreenProduct> {
             ),
             Align(
               alignment: const Alignment(0.83, -1),
-              child: Container(
-                width: 166,
-                height: 71,
-                clipBehavior: Clip.hardEdge,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1532E7),
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Text(
-                        'Checkout',
-                        style: GoogleFonts.getFont(
-                          'Roboto',
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return CheckoutScreen();
+                  }));
+                },
+                child: Container(
+                  width: 166,
+                  height: 71,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1532E7),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Text(
+                          'Checkout',
+                          style: GoogleFonts.getFont(
+                            'Roboto',
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                      ),
-                    ],
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
