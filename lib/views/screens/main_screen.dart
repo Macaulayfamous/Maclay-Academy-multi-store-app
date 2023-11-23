@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:macstore/views/screens/bottomNav_screens/acount_screen.dart';
+import 'package:macstore/views/screens/bottomNav_screens/favorite_screen.dart';
 import 'package:macstore/views/screens/home_Screen.dart';
 import 'package:macstore/views/screens/widgets/cart_product_widget.dart';
 
@@ -14,13 +16,9 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> pages = [
     HomeScreen(),
-    Center(
-      child: Text('Favorite'),
-    ),
+    FavoriteScreen(),
     CartScreenProduct(),
-    Center(
-      child: Text('Account'),
-    ),
+    AccountScreen(),
   ];
   @override
   Widget build(BuildContext context) {

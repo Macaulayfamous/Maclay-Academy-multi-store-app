@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:macstore/controllers/auth_controller.dart';
 import 'package:macstore/controllers/banners_controller.dart';
 import 'package:macstore/controllers/category_controller.dart';
-import 'package:macstore/views/screens/main_screen.dart';
+import 'package:macstore/views/screens/authentication_screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,10 @@ void main() async {
           appId: '1:558100884881:android:013960d2a4d5fc48e83e30',
           messagingSenderId: '558100884881',
           projectId: 'macstore-73d62',
-        ))
+          storageBucket: "gs://macstore-73d62.appspot.com",
+        )).then((value) {
+            Get.put(AuthController());
+        })
       : await Firebase.initializeApp();
   runApp(ProviderScope(child: const MyApp()));
 }
@@ -39,7 +43,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MainScreen(),
+      home: LoginScreen(),
       initialBinding: BindingsBuilder(() {
         Get.put<CategoryController>(
           CategoryController(),

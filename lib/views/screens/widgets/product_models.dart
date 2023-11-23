@@ -1,19 +1,28 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:macstore/provider/favorite_provider.dart';
 import 'package:macstore/views/screens/inner_screen/product_detail.dart';
 
-class ProductModel extends StatelessWidget {
+class ProductModel extends ConsumerStatefulWidget {
   final dynamic productData;
 
   ProductModel({super.key, this.productData});
 
   @override
+  _ProductModelState createState() => _ProductModelState();
+}
+
+class _ProductModelState extends ConsumerState<ProductModel> {
+  @override
   Widget build(BuildContext context) {
+    final _favoriteProvider = ref.read(favoriteProvider.notifier);
+    ref.watch(favoriteProvider);
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
           return ProductDetail(
-            productData: productData,
+            productData: widget.productData,
           );
         }));
       },
@@ -52,7 +61,7 @@ class ProductModel extends StatelessWidget {
                 left: 7,
                 top: 130,
                 child: Text(
-                  productData['productName'].toString(),
+                  widget.productData['productName'].toString(),
                   style: TextStyle(
                     color: Color(0xFF1E3354),
                     fontSize: 14,
@@ -66,7 +75,7 @@ class ProductModel extends StatelessWidget {
                 left: 7,
                 top: 177,
                 child: Text(
-                  productData['productName'],
+                  widget.productData['productName'],
                   style: TextStyle(
                     color: Color(0xFF7F8E9D),
                     fontSize: 12,
@@ -79,7 +88,7 @@ class ProductModel extends StatelessWidget {
                 left: 7,
                 top: 207,
                 child: Text(
-                  '\$' + productData['discountPrice'].toString(),
+                  '\$' + widget.productData['discountPrice'].toString(),
                   style: TextStyle(
                     color: Color(0xFF1E3354),
                     fontSize: 20,
@@ -93,7 +102,7 @@ class ProductModel extends StatelessWidget {
                 left: 51,
                 top: 210,
                 child: Text(
-                  '\$' + productData['price'].toString(),
+                  '\$' + widget.productData['price'].toString(),
                   style: TextStyle(
                     color: Color(0xFFFA634D),
                     fontSize: 16,
@@ -165,7 +174,7 @@ class ProductModel extends StatelessWidget {
                           left: 10,
                           top: -10,
                           child: CachedNetworkImage(
-                            imageUrl: productData['productImages'][0],
+                            imageUrl: widget.productData['productImages'][0],
                             width: 108,
                             height: 107,
                           ))
@@ -173,11 +182,11 @@ class ProductModel extends StatelessWidget {
                   ),
                 ),
               ),
-              const Positioned(
+              Positioned(
                 left: 56,
                 top: 155,
                 child: Text(
-                  '> 500 Sold',
+                  '> ${widget.productData['salesCount']} Sold',
                   style: TextStyle(
                     color: Color(0xFF7F8E9D),
                     fontSize: 12,
@@ -254,13 +263,29 @@ class ProductModel extends StatelessWidget {
                 ),
               ),
               Positioned(
-                left: 111,
-                top: 24,
-                child: Image.network(
-                  'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2FoWHqAkkBQtCIoAn9Tb3B%2F9c83b5267b182c23fb221cc2f7b65224.png',
-                  width: 13,
-                  height: 12,
-                  fit: BoxFit.contain,
+                right: 5,
+                top: 5,
+                child: IconButton(
+                  onPressed: () {
+                    _favoriteProvider.addProuctToFavorite(
+                        productName: widget.productData['productName'],
+                        productId: widget.productData['productId'],
+                        imageUrl: widget.productData['productImages'],
+                        price: widget.productData['price'],
+                        productSize: widget.productData['productSize']);
+                  },
+                  icon: _favoriteProvider.getFavoriteItem
+                          .containsKey(widget.productData['productId'])
+                      ? Icon(
+                          Icons.favorite,
+                          color: Colors.white,
+                          size: 16,
+                        )
+                      : Icon(
+                          Icons.favorite_border,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                 ),
               ),
               Positioned(

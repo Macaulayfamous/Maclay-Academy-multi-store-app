@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+// ignore: must_be_immutable
 class CustomTextField extends StatefulWidget {
   final String label;
   final Widget prefixIcon;
   final bool isPassword;
   final String text;
+  void Function(String)? onChanged;
+  String? Function(String?)? validator;
 
   CustomTextField({
     required this.label,
     required this.prefixIcon,
     this.isPassword = false,
     required this.text,
+    required this.validator,
+    required this.onChanged,
   });
 
   @override
@@ -26,21 +31,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Align(
-          alignment: Alignment.topLeft,
-          child: Text(
-            widget.text,
-            style: GoogleFonts.getFont(
-              'Nunito Sans',
-              color: Color(0xFF0D120E),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-              height: 1.6,
-            ),
-          ),
-        ),
         TextFormField(
+          onChanged: widget.onChanged,
+          validator: widget.validator,
           obscureText: widget.isPassword ? _isObscure : false,
           controller: _controller,
           decoration: InputDecoration(

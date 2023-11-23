@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/provider/product_provider.dart';
-import 'package:macstore/views/screens/inner_screen/product_detail.dart';
+import 'package:macstore/views/screens/inner_screen/shipping_address_screen.dart';
+import 'package:uuid/uuid.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   @override
@@ -11,11 +14,45 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 }
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   String? selectedPaymentOption;
+  // Variables to store user data
+  String pinCode = '';
+  String locality = '';
+  String city = '';
+  String state = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Call the method to set up the stream
+    _setupUserDataStream();
+  }
+
+  void _setupUserDataStream() {
+    // Create a stream of the user data
+    Stream<DocumentSnapshot> userDataStream =
+        _firestore.collection('users').doc(_auth.currentUser!.uid).snapshots();
+
+    // Listen to the stream and update the UI when there's a change
+    userDataStream.listen((DocumentSnapshot userData) {
+      if (userData.exists) {
+        setState(() {
+          pinCode = userData.get('pinCode');
+          locality = userData.get('locality');
+          city = userData.get('city');
+          state = userData.get('state');
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final _cartProvider = ref.read(cartProvider.notifier);
+
     final cartData = ref.watch(cartProvider);
     final totalAmount = ref.read(cartProvider.notifier).calculateTotalAmount();
     double total = totalAmount + 10;
@@ -35,7 +72,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,18 +118,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: SizedBox(
-                                        width: 114,
-                                        child: Text(
-                                          'United States',
-                                          style: GoogleFonts.getFont(
-                                            'Lato',
-                                            color: const Color(0xFF0B0C1E),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            height: 1.3,
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(
+                                                builder: (context) {
+                                          return ShippingAddressScreen();
+                                        }));
+                                      },
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: SizedBox(
+                                          width: 114,
+                                          child: Text(
+                                            state == "" ? "Add address" : state,
+                                            style: GoogleFonts.getFont(
+                                              'Lato',
+                                              color: const Color(0xFF0B0C1E),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.3,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -101,7 +147,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     Align(
                                       alignment: Alignment.centerLeft,
                                       child: Text(
-                                        '4141 SW 34th Ave, Amarillo, TX 79109... ',
+                                        city == ""
+                                            ? "Enter City"
+                                            : locality + " " + city,
                                         style: GoogleFonts.getFont(
                                           'Lato',
                                           color: const Color(0xFF7F808C),
@@ -559,23 +607,73 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Container(
-          width: 338,
-          height: 58,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3B54EE),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Center(
-            child: Text(
-              'Pay Now',
-              style: GoogleFonts.getFont(
-                'Lato',
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                height: 1.6,
+        child: InkWell(
+          onTap: () async {
+            DocumentSnapshot userDoc = await _firestore
+                .collection('users')
+                .doc(_auth.currentUser!.uid)
+                .get();
+
+            if (selectedPaymentOption == 'CashOnDelivery') {
+              // Save order details and update sales count in the product collection
+              await Future.forEach(_cartProvider.getCartItems.entries,
+                  (entry) async {
+                final orderId = Uuid().v4();
+                var item = entry.value;
+
+                // Update the sales count for the product
+                await _firestore
+                    .collection('products')
+                    .doc(item.productId)
+                    .update({
+                  'salesCount': FieldValue.increment(item.quantity.toDouble()),
+                });
+
+                // Save order details
+                await _firestore.collection('orders').doc(orderId).set({
+                  'orderId': orderId,
+                  'productName': item.productName,
+                  'productId': item.productId,
+                  'size': item.productSize,
+                  'quantity': item.quantity,
+                  'price': item.quantity * item.productPrice,
+                  'productCategory': item.catgoryName,
+                  'productImage': item.imageUrl[0],
+                  'state': state,
+                  'locality': locality,
+                  'pinCode': pinCode,
+                  'city': city,
+                  'fullName':
+                      (userDoc.data() as Map<String, dynamic>)['fullName'],
+                  'email': (userDoc.data() as Map<String, dynamic>)['email'],
+                  'buyerId': _auth.currentUser!.uid,
+                  "deliveredCount": 0,
+                  "delivered": false,
+                  "processing": true,
+                });
+              });
+            } else {
+              print('stripe');
+            }
+          },
+          child: Container(
+            width: 338,
+            height: 58,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: const Color(0xFF3B54EE),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Center(
+              child: Text(
+                'Pay Now',
+                style: GoogleFonts.getFont(
+                  'Lato',
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  height: 1.6,
+                ),
               ),
             ),
           ),

@@ -13,9 +13,9 @@ class HeaderWidget extends StatelessWidget {
       child: Stack(
         children: [
           Image.asset(
-            'assets/icons/1.png',
+            'assets/icons/searchBanner.jpeg',
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.20,
+            // height: MediaQuery.of(context).size.height * 0.20,
             fit: BoxFit.cover,
           ),
           Positioned(
@@ -70,15 +70,15 @@ class HeaderWidget extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   prefixIcon: SizedBox.square(
                     dimension: 24,
-                    child: Image.network(
-                      'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/u95VPQt7clXUFWMKgdUNoZ5RqEy2%2Fuploads%2Fimages%2Fsearch.png?alt=media&token=a4c0d44a-4a87-489b-b575-feee812343d1',
+                    child: Image.asset(
+                      'assets/icons/searc1.png',
                       scale: 5,
                     ),
                   ),
                   suffixIcon: SizedBox.square(
                     dimension: 24,
-                    child: Image.network(
-                      'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/u95VPQt7clXUFWMKgdUNoZ5RqEy2%2Fuploads%2Fimages%2Fcamera.png?alt=media&token=f22ff345-904f-4e09-9b9a-3cbe4d1e2d71',
+                    child: Image.asset(
+                      'assets/icons/cam.png',
                     ),
                   ),
                   filled: true,
@@ -121,8 +121,8 @@ class HeaderWidget extends StatelessWidget {
                   height: 31,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(
-                        'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/u95VPQt7clXUFWMKgdUNoZ5RqEy2%2Fuploads%2Fimages%2F29f89a00_3f38_1d8d_bcd6_87304e104361_notifcation.png?alt=media',
+                      image: AssetImage(
+                        'assets/icons/bell.png',
                       ),
                       fit: BoxFit.contain,
                     ),

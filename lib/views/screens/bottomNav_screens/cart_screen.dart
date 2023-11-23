@@ -88,8 +88,8 @@ class Frame2 extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: NetworkImage(
-            'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/projects%2Fnn2Ldqjoc2Xp89Y7Wfzf%2Fda5eb4c298e80ff3e7e047b6765124d9e9eb5260bg%20(1)%202.png?alt=media&token=a4bbee38-27a6-4f05-8078-06b4d3346578',
+          image: AssetImage(
+            'assets/icons/cartb.png',
           ),
           fit: BoxFit.cover,
         ),
@@ -100,8 +100,8 @@ class Frame2 extends StatelessWidget {
           Positioned(
             left: 322,
             top: 52,
-            child: Image.network(
-              'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2Fff9d75063d0d93ab7055e59bd14c4ba7.png',
+            child: Image.asset(
+              'assets/icons/not.png',
               width: 26,
               height: 26,
               fit: BoxFit.contain,

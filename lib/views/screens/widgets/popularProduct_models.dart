@@ -28,11 +28,29 @@ class PopularModel extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 clipBehavior: Clip.hardEdge,
-                child: Image.network(
-                  popularProduct['productImages'][0],
+                child: Container(
                   width: 87,
                   height: 81,
-                  fit: BoxFit.cover,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB0CCFF),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: 10,
+                        top: 6,
+                        child: Image.network(
+                          popularProduct['productImages'][0],
+                          width: 71,
+                          height: 71,
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -84,9 +102,9 @@ class PopularModel extends StatelessWidget {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
-                      '> 500 Sold',
+                      '> ${popularProduct["salesCount"]} Sold',
                       style: GoogleFonts.getFont(
                         'Lato',
                         color: const Color(0xFF7F8E9D),

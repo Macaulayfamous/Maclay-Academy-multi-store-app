@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/controllers/category_controller.dart';
+import 'package:macstore/views/screens/inner_screen/all_category_products_screen.dart';
 
 class CategoryItem extends StatelessWidget {
   const CategoryItem({Key? key});
@@ -29,7 +30,13 @@ class CategoryItem extends StatelessWidget {
                   : categoryController.categories.length,
               itemBuilder: (context, index) {
                 return InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return AllCategoryProductScreen(
+                            categoryData: categoryController.categories[index]);
+                      }));
+                    },
                     child: Container(
                       width: 83,
                       height: 99,
@@ -48,12 +55,11 @@ class CategoryItem extends StatelessWidget {
                                 categoryController
                                     .categories[index].categoryName,
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.getFont(
-                                  'Lato',
+                                style: GoogleFonts.quicksand(
                                   color: Colors.black,
                                   fontSize: 14,
                                   letterSpacing: 0.3,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),

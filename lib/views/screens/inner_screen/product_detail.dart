@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:macstore/provider/favorite_provider.dart';
 import 'package:macstore/provider/product_provider.dart';
+import 'package:macstore/provider/size_provider.dart';
+import 'package:macstore/views/screens/widgets/product_models.dart';
 
 class ProductDetail extends ConsumerStatefulWidget {
   final dynamic productData;
@@ -16,7 +20,7 @@ class ProductDetail extends ConsumerStatefulWidget {
 class _ProductDetailState extends ConsumerState<ProductDetail> {
   late ValueNotifier<String> descriptionNotifier;
   bool showFullDescription = false;
-
+  String? _selectedSize;
   @override
   void initState() {
     super.initState();
@@ -26,9 +30,19 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final Stream<QuerySnapshot> _productsStream = FirebaseFirestore.instance
+        .collection('products')
+        .where(
+          'category',
+          isEqualTo: widget.productData['category'],
+        )
+        .snapshots();
+    final _favoriteProvider = ref.read(favoriteProvider.notifier);
+    ref.watch(favoriteProvider);
     final _cartProvider = ref.read(cartProvider.notifier);
     final cartItem = ref.watch(cartProvider);
     final isInCart = cartItem.containsKey(widget.productData['productId']);
+    final selectedSize = ref.watch(selectedSizeProvider);
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -65,11 +79,28 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                           ),
                         ),
                       ),
-                      Image.network(
-                        'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2Fdae7bac7101aca62770785afc4bf4ad0.png',
-                        width: 22,
-                        height: 20,
-                        fit: BoxFit.contain,
+                      IconButton(
+                        onPressed: () {
+                          _favoriteProvider.addProuctToFavorite(
+                              productName: widget.productData['productName'],
+                              productId: widget.productData['productId'],
+                              imageUrl: widget.productData['productImages'],
+                              price: widget.productData['price'],
+                              productSize: widget.productData['productSize']);
+                        },
+                        icon: _favoriteProvider.getFavoriteItem
+                                .containsKey(widget.productData['productId'])
+                            ? Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+
+                                // size: 16,
+                              )
+                            : Icon(
+                                Icons.favorite_border,
+                                color: Colors.red,
+                                // size: 16,
+                              ),
                       ),
                     ],
                   ),
@@ -212,131 +243,71 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      height: 30,
-                      alignment: const Alignment(0, -0.2),
-                      child: Text(
-                        'Size :',
-                        style: GoogleFonts.getFont(
-                          'Lato',
-                          color: const Color(0xFF343434),
-                          fontSize: 16,
-                          height: 1.6,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 138),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 12,
-                            top: 7,
+                    widget.productData['productSize'].isEmpty
+                        ? Text('')
+                        : Container(
+                            height: 30,
+                            alignment: const Alignment(0, -0.2),
                             child: Text(
-                              'S',
+                              'Size :',
                               style: GoogleFonts.getFont(
-                                'Quicksand',
-                                color: const Color(0xFF57636F),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                'Lato',
+                                color: const Color(0xFF343434),
+                                fontSize: 16,
+                                height: 1.6,
                               ),
                             ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
+                          ),
+                    // SizedBox(
+                    //   width: 138,
+                    // ),
                     Container(
-                      width: 30,
-                      height: 30,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF126881),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 10,
-                            top: 7,
-                            child: Text(
-                              'M',
-                              style: GoogleFonts.getFont(
-                                'Quicksand',
-                                color: const Color(0xFFF6F6F7),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                      height: 50,
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.productData['productSize'].length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: InkWell(
+                                onTap: () {
+                                  final newSelected =
+                                      widget.productData['productSize'][index];
+
+                                  ref
+                                      .read(selectedSizeProvider.notifier)
+                                      .setSelectedSize(newSelected);
+                                },
+                                child: Container(
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: selectedSize ==
+                                            widget.productData['productSize']
+                                                [index]
+                                        ? Color(0xFFF6F6F7)
+                                        : const Color(0xFF126881),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      widget.productData['productSize'][index],
+                                      style: GoogleFonts.quicksand(
+                                        color: selectedSize ==
+                                                widget.productData[
+                                                    'productSize'][index]
+                                            ? Colors.black
+                                            : Color(0xFFF6F6F7),
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          )
-                        ],
-                      ),
+                            );
+                          }),
                     ),
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 11,
-                            top: 7,
-                            child: Text(
-                              'L',
-                              style: GoogleFonts.getFont(
-                                'Quicksand',
-                                color: const Color(0xFF57636F),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 30,
-                      height: 30,
-                      clipBehavior: Clip.hardEdge,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned(
-                            left: 8,
-                            top: 7,
-                            child: Text(
-                              'XL',
-                              style: GoogleFonts.getFont(
-                                'Quicksand',
-                                color: const Color(0xFF57636F),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
                   ],
                 ),
               ),
@@ -399,6 +370,42 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                   },
                 ),
               ),
+              SizedBox(
+                height: 20,
+              ),
+              Text(
+                'Related Products',
+                style: GoogleFonts.roboto(
+                  fontSize: 17,
+                ),
+              ),
+              StreamBuilder<QuerySnapshot>(
+                stream: _productsStream,
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Something went wrong');
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Text("Loading");
+                  }
+
+                  return Container(
+                    height: 250,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        final productData = snapshot.data!.docs[index];
+                        return ProductModel(
+                          productData: productData,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -416,7 +423,7 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                     imageUrl: widget.productData['productImages'],
                     quantity: 1,
                     productId: widget.productData['productId'],
-                    productSize: 'X',
+                    productSize: selectedSize,
                     discount: widget.productData['discountPrice'],
                     description: widget.productData['description'],
                   );
