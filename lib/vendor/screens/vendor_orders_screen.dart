@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:macstore/views/screens/inner_screen/order_detail_screen.dart';
+import 'package:macstore/vendor/screens/inner_screen/vendor_order_detail.dart';
 
-class OrderScreen extends StatelessWidget {
-  const OrderScreen({super.key});
+class VendorOrderScreen extends StatelessWidget {
+  const VendorOrderScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final Stream<QuerySnapshot> _ordersStream = FirebaseFirestore.instance
         .collection('orders')
-        .where('buyerId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .where('storeId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
         .snapshots();
 
     return Scaffold(
@@ -38,28 +38,27 @@ class OrderScreen extends StatelessWidget {
                   top: 51,
                   child: Text(
                     'My Orders',
-                    style: GoogleFonts.getFont(
-                      'Lato',
+                    style: GoogleFonts.roboto(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                Positioned(
-                  left: 23,
-                  top: 54,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(
-                      Icons.arrow_back_ios,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
+                // Positioned(
+                //   left: 23,
+                //   top: 54,
+                //   child: InkWell(
+                //     onTap: () {
+                //       Navigator.pop(context);
+                //     },
+                //     child: Icon(
+                //       Icons.arrow_back_ios,
+                //       size: 20,
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                // )
               ],
             ),
           ),
@@ -73,9 +72,21 @@ class OrderScreen extends StatelessWidget {
             }
 
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Text("Loading");
+              return Center(
+                child: CircularProgressIndicator(),
+              );
             }
 
+            if (snapshot.data!.docs.isEmpty) {
+              return Center(
+                  child: Text(
+                'No Pending Orders Yet',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
+              ));
+            }
             return ListView.builder(
                 itemCount: snapshot.data!.size,
                 itemBuilder: ((context, index) {
@@ -91,7 +102,7 @@ class OrderScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) {
-                              return OrderDetail(
+                              return VendorOrderDetail(
                                 orderData: orderData,
                               );
                             },

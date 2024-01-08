@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ButtonWidgets extends StatelessWidget {
-  final String title;
-  final String subtitle;
+ 
   final bool isLoading;
   final String buttonTitle;
   final void Function() buttonChange;
-  final void Function() onChanged;
 
-  const ButtonWidgets(
-      {super.key,
-      required this.title,
-      required this.subtitle,
-      required this.buttonChange,
-      required this.isLoading,
-      required this.buttonTitle,
-      required this.onChanged});
+  const ButtonWidgets({
+    super.key,
+  
+    required this.buttonChange,
+    required this.isLoading,
+    required this.buttonTitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -130,36 +126,6 @@ class ButtonWidgets extends StatelessWidget {
                             ),
                     ),
                   ],
-                ),
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: onChanged,
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: RichText(
-                  textAlign: TextAlign.left,
-                  text: TextSpan(
-                    style: GoogleFonts.getFont(
-                      'Nunito Sans',
-                      color: const Color(0xFF7F909F),
-                      fontSize: 14,
-                      letterSpacing: 0.1,
-                      height: 1.7,
-                    ),
-                    children: [
-                      TextSpan(text: title),
-                      TextSpan(
-                        text: subtitle,
-                        style: TextStyle(
-                          color: Color(0xFF1131E2),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),

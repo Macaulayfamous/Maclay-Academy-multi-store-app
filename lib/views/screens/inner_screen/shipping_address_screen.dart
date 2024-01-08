@@ -143,27 +143,26 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                     height: 20,
                   ),
                   ButtonWidgets(
-                     isLoading:  false,
-                      title: '',
-                      subtitle: '',
-                      buttonChange: () async {
-                        if (_formKey.currentState!.validate()) {
-                          _showLoginDialog(context);
-                          await _firestore
-                              .collection('users')
-                              .doc(_auth.currentUser!.uid)
-                              .update({
-                            "pinCode": pinCode,
-                            'locality': locality,
-                            'city': city,
-                            'state': state,
-                          }).whenComplete(() {
-                            Navigator.pop(context);
-                          });
-                        }
-                      },
-                      buttonTitle: 'Go to Payment',
-                      onChanged: () {})
+                    isLoading: false,
+                   
+                    buttonChange: () async {
+                      if (_formKey.currentState!.validate()) {
+                        _showLoginDialog(context);
+                        await _firestore
+                            .collection('users')
+                            .doc(_auth.currentUser!.uid)
+                            .update({
+                          "pinCode": pinCode,
+                          'locality': locality,
+                          'city': city,
+                          'state': state,
+                        }).whenComplete(() {
+                          Navigator.pop(context);
+                        });
+                      }
+                    },
+                    buttonTitle: 'Go to Payment',
+                  )
                 ],
               ),
             ),
@@ -180,7 +179,7 @@ void _showLoginDialog(BuildContext context) {
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Logging In'),
+        title: Text('Updating Address'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,21 +13,21 @@ class AuthController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  @override
-  void onReady() {
-    super.onReady();
-    _user = Rx<User?>(FirebaseAuth.instance.currentUser);
-    _user.bindStream(FirebaseAuth.instance.authStateChanges());
-    ever(_user, _setInitialScreen);
-  }
+  // @override
+  // void onReady() {
+  //   super.onReady();
+  //   _user = Rx<User?>(FirebaseAuth.instance.currentUser);
+  //   _user.bindStream(FirebaseAuth.instance.authStateChanges());
+  //   ever(_user, _setInitialScreen);
+  // }
 
-  _setInitialScreen(User? user) {
-    if (user == null) {
-      Get.off(() => LoginScreen());
-    } else {
-      Get.off(() => MainScreen());
-    }
-  }
+  // _setInitialScreen(User? user) {
+  //   if (user == null) {
+  //     Get.off(() => LoginScreen());
+  //   } else {
+  //     Get.off(() => MainScreen());
+  //   }
+  // }
 
   // pickProfileImage(ImageSource source) async {
   //   final ImagePicker _imagePicker = ImagePicker();
@@ -71,7 +70,7 @@ class AuthController extends GetxController {
 
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'fullName': fullName,
-        // 'profileImage': downloadUrl,
+        'profileImage': '',
         'email': email,
         'uid': userCredential.user!.uid,
         'pinCode ': "",

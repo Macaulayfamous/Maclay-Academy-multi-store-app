@@ -3,6 +3,7 @@ class CartModel {
   final num productPrice;
   final String catgoryName;
   final List imageUrl;
+  final String storeId;
   int quantity;
   final String productId;
   final String productSize;
@@ -16,5 +17,7 @@ class CartModel {
       required this.imageUrl,
       required this.quantity,
       required this.productId,
-      required this.productSize, required this.discount, required this.description});
+      required this.productSize,
+      required this.discount,
+      required this.description, required this.storeId});
 }

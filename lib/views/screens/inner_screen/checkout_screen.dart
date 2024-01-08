@@ -1,11 +1,17 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+
 import 'package:macstore/provider/product_provider.dart';
 import 'package:macstore/views/screens/inner_screen/shipping_address_screen.dart';
+import 'package:macstore/views/screens/main_screen.dart';
 import 'package:uuid/uuid.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
@@ -15,7 +21,161 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isLoading = false;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Map<String, dynamic>? paymentIntentData;
+
+  Future<void> makePayment(double totalPrice, dynamic data) async {
+    try {
+      String customerId =
+          await createStripeCustomer(data['email'], data['fullName']);
+      final paymentIntent = await createPaymentIntent(totalPrice, customerId);
+
+      var gpay = stripe.PaymentSheetGooglePay(
+        merchantCountryCode: "US",
+        currencyCode: "US",
+        testEnv: true,
+      );
+
+      await stripe.Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: stripe.SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent['client_secret'],
+          style: ThemeMode.dark,
+          googlePay: gpay,
+          merchantDisplayName: 'Macaualay',
+        ),
+      );
+
+      // Display the payment sheet
+      displayPaymentSheet(data);
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<String> createStripeCustomer(String email, String name) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/customers'),
+        headers: {
+          'Authorization':
+              'Bearer sk_test_51Nv0TYLcpVDSklU4dydjyJfHJ9KamShhjRJlS3osm696jv1QsHn5HMts03pFxFbwwokNcGRZQRNmFUac1MLeJgnW00Q0oGYb5B', // Replace with your secret key
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'email': email,
+          'name': name,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final customerData = json.decode(response.body);
+        return customerData['id']; // Return the customer ID
+      } else {
+        throw Exception('Failed to create customer: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  displayPaymentSheet(dynamic data) async {
+    try {
+      await stripe.Stripe.instance.presentPaymentSheet().then((value) async {
+        paymentIntentData = null;
+        print('paid');
+
+        // showProgress();
+        for (var item in ref.read(cartProvider.notifier).getCartItems.values) {
+          DocumentSnapshot userDoc = await _firestore
+              .collection('users')
+              .doc(_auth.currentUser!.uid)
+              .get();
+
+          await _firestore.collection('products').doc(item.productId).update({
+            'salesCount': FieldValue.increment(item.quantity.toDouble()),
+          });
+          CollectionReference orderRef =
+              FirebaseFirestore.instance.collection('orders');
+          final orderId = const Uuid().v4();
+          await orderRef.doc(orderId).set({
+            'orderId': orderId,
+            'productName': item.productName,
+            'productId': item.productId,
+            'size': item.productSize,
+            'quantity': item.quantity,
+            'price': item.quantity * item.productPrice,
+            'productCategory': item.catgoryName,
+            'productImage': item.imageUrl[0],
+            'state': state,
+            'locality': locality,
+            'pinCode': pinCode,
+            'city': city,
+            'fullName': (userDoc.data() as Map<String, dynamic>)['fullName'],
+            'email': (userDoc.data() as Map<String, dynamic>)['email'],
+            'buyerId': _auth.currentUser!.uid,
+            "deliveredCount": 0,
+            "delivered": false,
+            "processing": true,
+            'storeId': item.storeId,
+          }).whenComplete(() async {
+            // await FirebaseFirestore.instance
+            //     .runTransaction((transaction) async {
+            //   DocumentReference documentReference = FirebaseFirestore.instance
+            //       .collection('products')
+            //       .doc(item.documentId);
+            //   DocumentSnapshot snapshot2 =
+            //       await transaction.get(documentReference);
+            //   transaction.update(documentReference,
+            //       {'instock': snapshot2['instock'] - item.qty});
+            // });
+          });
+        }
+        await Future.delayed(const Duration(microseconds: 100))
+            .whenComplete(() {
+          //clear
+          // context.read<Cart>().clearCart();
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return MainScreen();
+          }));
+        });
+      });
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  Future<Map<String, dynamic>> createPaymentIntent(
+    double amount,
+    String customerEmail,
+  ) async {
+    try {
+      Map<String, dynamic> body = {
+        'amount': (amount * 100).toInt().toString(), // Convert amount to cents
+        'currency': "USD",
+        'customer': customerEmail,
+      };
+
+      final response = await http.post(
+        Uri.parse("https://api.stripe.com/v1/payment_intents"),
+        body: body,
+        headers: {
+          'Authorization':
+              'Bearer sk_test_51Nv0TYLcpVDSklU4dydjyJfHJ9KamShhjRJlS3osm696jv1QsHn5HMts03pFxFbwwokNcGRZQRNmFUac1MLeJgnW00Q0oGYb5B', // Replace with your secret key
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        throw Exception('Failed to create payment intent: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
 
   String? selectedPaymentOption;
   // Variables to store user data
@@ -77,156 +237,165 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: 335,
-                height: 74,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned(
-                      left: 0,
-                      top: 0,
-                      child: Container(
-                        width: 336,
-                        height: 75,
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            color: const Color(0xFFEFF0F2),
+              InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return ShippingAddressScreen();
+                  }));
+                },
+                child: SizedBox(
+                  width: 335,
+                  height: 74,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        child: Container(
+                          width: 336,
+                          height: 75,
+                          clipBehavior: Clip.hardEdge,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: const Color(0xFFEFF0F2),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: 70,
-                      top: 17,
-                      child: SizedBox(
-                        width: 215,
-                        height: 41,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned(
-                              left: -1,
-                              top: -1,
-                              child: SizedBox(
-                                width: 219,
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    InkWell(
-                                      onTap: () {
-                                        Navigator.push(context,
-                                            MaterialPageRoute(
-                                                builder: (context) {
-                                          return ShippingAddressScreen();
-                                        }));
-                                      },
-                                      child: Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: SizedBox(
-                                          width: 114,
-                                          child: Text(
-                                            state == "" ? "Add address" : state,
-                                            style: GoogleFonts.getFont(
-                                              'Lato',
-                                              color: const Color(0xFF0B0C1E),
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              height: 1.3,
+                      Positioned(
+                        left: 70,
+                        top: 17,
+                        child: SizedBox(
+                          width: 215,
+                          height: 41,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                left: -1,
+                                top: -1,
+                                child: SizedBox(
+                                  width: 219,
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.push(context,
+                                              MaterialPageRoute(
+                                                  builder: (context) {
+                                            return ShippingAddressScreen();
+                                          }));
+                                        },
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: SizedBox(
+                                            width: 114,
+                                            child: Text(
+                                              state == ""
+                                                  ? "Add address"
+                                                  : state,
+                                              style: GoogleFonts.getFont(
+                                                'Lato',
+                                                color: const Color(0xFF0B0C1E),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                height: 1.3,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        city == ""
-                                            ? "Enter City"
-                                            : locality + " " + city,
-                                        style: GoogleFonts.getFont(
-                                          'Lato',
-                                          color: const Color(0xFF7F808C),
-                                          fontSize: 12,
-                                          height: 1.6,
+                                      const SizedBox(height: 4),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          city == ""
+                                              ? "Enter City"
+                                              : locality + " " + city,
+                                          style: GoogleFonts.getFont(
+                                            'Lato',
+                                            color: const Color(0xFF7F808C),
+                                            fontSize: 12,
+                                            height: 1.6,
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                  ],
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            )
-                          ],
+                              )
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: 16,
-                      top: 16,
-                      child: SizedBox.square(
-                        dimension: 42,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              child: Container(
-                                width: 43,
-                                height: 43,
-                                clipBehavior: Clip.hardEdge,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFBF7F5),
-                                  borderRadius: BorderRadius.circular(100),
-                                ),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    Positioned(
-                                      left: 11,
-                                      top: 11,
-                                      child: Image.network(
-                                        'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F2ee3a5ce3b02828d0e2806584a6baa88.png',
-                                        width: 20,
-                                        height: 20,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    )
-                                  ],
+                      Positioned(
+                        left: 16,
+                        top: 16,
+                        child: SizedBox.square(
+                          dimension: 42,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              Positioned(
+                                left: 0,
+                                top: 0,
+                                child: Container(
+                                  width: 43,
+                                  height: 43,
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBF7F5),
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Positioned(
+                                        left: 11,
+                                        top: 11,
+                                        child: Image.network(
+                                          'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F2ee3a5ce3b02828d0e2806584a6baa88.png',
+                                          width: 20,
+                                          height: 20,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              left: 11,
-                              top: 11,
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                clipBehavior: Clip.hardEdge,
-                                decoration: const BoxDecoration(),
-                              ),
-                            )
-                          ],
+                              Positioned(
+                                left: 11,
+                                top: 11,
+                                child: Container(
+                                  width: 20,
+                                  height: 20,
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: const BoxDecoration(),
+                                ),
+                              )
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: 305,
-                      top: 25,
-                      child: Image.network(
-                        'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/projects%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F6ce18a0efc6e889de2f2878027c689c9caa53feeedit%201.png?alt=media&token=a3a8a999-80d5-4a2e-a9b7-a43a7fa8789a',
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  ],
+                      Positioned(
+                        left: 305,
+                        top: 25,
+                        child: Image.network(
+                          'https://firebasestorage.googleapis.com/v0/b/codeless-app.appspot.com/o/projects%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F6ce18a0efc6e889de2f2878027c689c9caa53feeedit%201.png?alt=media&token=a3a8a999-80d5-4a2e-a9b7-a43a7fa8789a',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -622,12 +791,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 var item = entry.value;
 
                 // Update the sales count for the product
-                await _firestore
-                    .collection('products')
-                    .doc(item.productId)
-                    .update({
-                  'salesCount': FieldValue.increment(item.quantity.toDouble()),
-                });
 
                 // Save order details
                 await _firestore.collection('orders').doc(orderId).set({
@@ -650,10 +813,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   "deliveredCount": 0,
                   "delivered": false,
                   "processing": true,
+                  'storeId': item.storeId,
+                });
+              }).whenComplete(() {
+                setState(() {
+                  _isLoading = false;
+                  _cartProvider.getCartItems.clear();
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return MainScreen();
+                  }));
                 });
               });
             } else {
-              print('stripe');
+              makePayment(totalAmount, userDoc);
             }
           },
           child: Container(
@@ -665,16 +837,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
-              child: Text(
-                'Pay Now',
-                style: GoogleFonts.getFont(
-                  'Lato',
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  height: 1.6,
-                ),
-              ),
+              child: _isLoading
+                  ? CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : Text(
+                      'Pay Now',
+                      style: GoogleFonts.getFont(
+                        'Lato',
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        height: 1.6,
+                      ),
+                    ),
             ),
           ),
         ),

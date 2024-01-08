@@ -17,28 +17,24 @@ class HomeScreen extends StatelessWidget {
             Size.fromHeight(MediaQuery.of(context).size.height * 0.20),
         child: HeaderWidget(),
       ),
-      body: Container(
-        constraints: BoxConstraints.expand(),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 10,
-              ),
-              BannerArea(),
-              CategoryItem(),
-              ResuseTextWidget(
-                  title: 'Recommend for you', subtitle: 'View all'),
-              RecommendedProduct(),
-              ResuseTextWidget(
-                title: 'Popular',
-                subtitle: 'View all',
-              ),
-              PopularProducts(),
-            ],
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 10,
+            ),
+            BannerArea(),
+            CategoryItem(),
+            ResuseTextWidget(title: 'Recommend for you', subtitle: 'View all'),
+            RecommendedProduct(),
+            ResuseTextWidget(
+              title: 'Popular',
+              subtitle: 'View all',
+            ),
+            PopularProducts(),
+          ],
         ),
       ),
     );

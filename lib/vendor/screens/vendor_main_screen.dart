@@ -1,27 +1,29 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:macstore/views/screens/bottomNav_screens/acount_screen.dart';
-import 'package:macstore/views/screens/bottomNav_screens/favorite_screen.dart';
+import 'package:macstore/vendor/screens/edit_product_screen.dart';
+import 'package:macstore/vendor/screens/vendor_account_screen.dart';
+import 'package:macstore/vendor/screens/vendor_orders_screen.dart';
+import 'package:macstore/views/screens/bottomNav_screens/cart_product_widget.dart';
 import 'package:macstore/views/screens/bottomNav_screens/stores_screen.dart';
 import 'package:macstore/views/screens/home_Screen.dart';
-import 'package:macstore/views/screens/bottomNav_screens/cart_product_widget.dart';
 
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+class vendorMainScreen extends StatefulWidget {
+  const vendorMainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<vendorMainScreen> createState() => _vendorMainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  int pageIndex = 0;
-
-  List<Widget> pages = [
+class _vendorMainScreenState extends State<vendorMainScreen> {
+  List<Widget> _pages = [
     HomeScreen(),
-    FavoriteScreen(),
     StoresScreen(),
     CartScreenProduct(),
-    AccountScreen(),
+    ProductUploadPage(),
+    VendorOrderScreen(),
+    VendorAccountScreen(),
   ];
+  int pageIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,14 +47,7 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Image.asset(
-              'assets/icons/love.png',
-              width: 25,
-            ),
-            label: 'Favorite',
-          ),
-
-           BottomNavigationBarItem(
+            backgroundColor: Colors.white.withOpacity(0.95),
             icon: Image.asset(
               'assets/icons/mart.png',
               width: 25,
@@ -67,15 +62,23 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Cart',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.edit),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
             icon: Image.asset(
-              'assets/icons/user.png',
-              width: 25,
+              'assets/icons/orders.png',
+              width: 40,
             ),
+            label: 'Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.money_dollar),
             label: 'Account',
           ),
         ],
       ),
-      body: pages[pageIndex],
+      body: _pages[pageIndex],
     );
   }
 }

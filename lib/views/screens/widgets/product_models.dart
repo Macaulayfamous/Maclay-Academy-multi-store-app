@@ -111,6 +111,7 @@ class _ProductModelState extends ConsumerState<ProductModel> {
                     fontFamily: 'Lato',
                   ),
                 ),
+                
               ),
               Positioned(
                 left: 9,
@@ -194,18 +195,22 @@ class _ProductModelState extends ConsumerState<ProductModel> {
                   ),
                 ),
               ),
-              const Positioned(
-                left: 23,
-                top: 155,
-                child: Text(
-                  '4.9',
-                  style: TextStyle(
-                    color: Color(0xFF7F8E9D),
-                    fontSize: 12,
-                    fontFamily: 'Lato',
-                  ),
-                ),
-              ),
+              if (widget.productData != null &&
+                  widget.productData.data().containsKey('rating'))
+                widget.productData['rating'] == 0
+                    ? Text("")
+                    : Positioned(
+                        left: 23,
+                        top: 155,
+                        child: Text(
+                          widget.productData['rating'].toString(),
+                          style: TextStyle(
+                            color: Color(0xFF7F8E9D),
+                            fontSize: 12,
+                            fontFamily: 'Lato',
+                          ),
+                        ),
+                      ),
               Positioned(
                 left: 8,
                 top: 156,

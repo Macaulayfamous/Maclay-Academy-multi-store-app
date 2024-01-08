@@ -15,7 +15,7 @@ class BannerArea extends StatelessWidget {
 
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: 150, // Adjust the banner height as needed
+      height: 170, // Adjust the banner height as needed
       padding: EdgeInsets.symmetric(horizontal: spacing),
       decoration: BoxDecoration(
         color: Color(0xFFF7F7F7),

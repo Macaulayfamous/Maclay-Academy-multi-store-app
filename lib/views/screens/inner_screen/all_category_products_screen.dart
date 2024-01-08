@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/models/category_models.dart';
 import 'package:macstore/views/screens/widgets/popularProduct_models.dart';
-import 'package:macstore/views/screens/widgets/product_models.dart';
 
 class AllCategoryProductScreen extends StatelessWidget {
   final CategoryModel categoryData;

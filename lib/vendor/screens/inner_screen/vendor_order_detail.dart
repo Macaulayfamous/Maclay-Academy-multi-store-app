@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-class OrderDetail extends StatefulWidget {
+class VendorOrderDetail extends StatefulWidget {
   final dynamic orderData;
 
-  OrderDetail({super.key, this.orderData});
+  VendorOrderDetail({super.key, this.orderData});
 
   @override
-  State<OrderDetail> createState() => _OrderDetailState();
+  State<VendorOrderDetail> createState() => _VendorOrderDetailState();
 }
 
-class _OrderDetailState extends State<OrderDetail> {
+class _VendorOrderDetailState extends State<VendorOrderDetail> {
   double rating = 0;
 
   final TextEditingController _reviewTextController = TextEditingController();
@@ -33,44 +33,6 @@ class _OrderDetailState extends State<OrderDetail> {
     } catch (error) {
       print('Error marking order as delivered: $error');
     }
-  }
-
-  Future<bool> hasUserReviewedProduct(String productId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('productReviews')
-        .where('productId', isEqualTo: productId)
-        .where('uid', isEqualTo: user!.uid)
-        .limit(1)
-        .get();
-
-    return querySnapshot.docs.isNotEmpty;
-  }
-
-  Future<void> updateProductRating(String productId) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('productReviews')
-        .where('productId', isEqualTo: productId)
-        .get();
-
-    double totalRating = 0;
-    int totalReviews = querySnapshot.docs.length;
-
-    for (final doc in querySnapshot.docs) {
-      totalRating += doc['rating'];
-    }
-
-    final double averageRating =
-        totalReviews > 0 ? totalRating / totalReviews : 0;
-
-    // Update the product's rating in the 'products' collection
-    await FirebaseFirestore.instance
-        .collection('products')
-        .doc(productId)
-        .update({
-      'rating': averageRating,
-      'totalReviews': totalReviews,
-    });
   }
 
   @override
@@ -161,7 +123,7 @@ class _OrderDetailState extends State<OrderDetail> {
                                           SizedBox(
                                             width: double.infinity,
                                             child: Text(
-                                              widget.orderData['productName'],
+                                              'Hoddie',
                                               style: GoogleFonts.getFont(
                                                 'Lato',
                                                 color: Colors.black,
@@ -381,134 +343,20 @@ class _OrderDetailState extends State<OrderDetail> {
               ),
             ),
           ),
-          widget.orderData['delivered'] == true
-              ? ElevatedButton(
-                  onPressed: () async {
-                    final productId = widget.orderData['productId'];
-                    final hasReviewed = await hasUserReviewedProduct(productId);
-
-                    if (hasReviewed) {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Error'),
-                          content:
-                              Text('You have already reviewed this product.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close the dialog
-                              },
-                              child: Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Leave a Review'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextFormField(
-                                controller: _reviewTextController,
-                                decoration: InputDecoration(
-                                  labelText: 'Your Review',
-                                ),
-                                // Add any necessary validation or controller properties
-                                // to handle the review text input
-                                // Example: validator, controller, etc.
-                              ),
-                              RatingBar.builder(
-                                initialRating:
-                                    rating, // Set the initial rating value
-                                minRating: 1, // Minimum rating value
-                                maxRating: 5, // Maximum rating value
-                                direction: Axis
-                                    .horizontal, // Horizontal or vertical display of rating stars
-                                allowHalfRating:
-                                    true, // Allow half-star ratings
-                                itemCount:
-                                    5, // Number of rating stars to display
-                                itemSize: 24, // Size of each rating star
-                                unratedColor:
-                                    Colors.grey, // Color of unrated stars
-                                itemPadding: EdgeInsets.symmetric(
-                                    horizontal:
-                                        4.0), // Padding between rating stars
-                                itemBuilder: (context, _) => Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                ), // Custom builder for rating star widget
-                                onRatingUpdate: (value) {
-                                  rating = value;
-
-                                  // Handle the rating update here
-                                  // This callback will be triggered when the user updates the rating
-                                  print(rating);
-                                },
-                              )
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () async {
-                                print('passwing');
-                                // Save the review and perform any necessary actions
-                                // Example: Call a function to save the review to the database
-
-                                final review = _reviewTextController.text;
-
-                                await FirebaseFirestore.instance
-                                    .collection('productReviews')
-                                    .add({
-                                  'productId': productId,
-                                  'fullName': widget.orderData['fullName'],
-                                  'email': widget.orderData['email'],
-                                  'uid': FirebaseAuth.instance.currentUser!.uid,
-                                  'rating': rating,
-                                  'review': review,
-                                  'timestamp': Timestamp.now(),
-                                }).whenComplete(() {});
-
-                                updateProductRating(productId);
-
-                                Navigator.pop(context); // Close the dialog
-                                _reviewTextController.clear();
-                                rating = 0;
-                              },
-                              child: Text('Submit'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
+          ElevatedButton(
+            onPressed: widget.orderData['delivered'] == true
+                ? null
+                : () {
+                    markAsDelivered();
                   },
-                  child: Text('Leave a Review'),
-                )
-              : SizedBox(),
+            child: widget.orderData['delivered'] == true
+                ? Text('Delivered')
+                : Text(
+                    'Mark as Delivered',
+                  ),
+          )
         ],
       ),
     );
   }
 }
-
-
-//  Future<void> markAsDelivered() async {
-//     try {
-//       // Update 'delivered' status to true and increment 'deliveredCount' in Firestore
-//       await FirebaseFirestore.instance
-//           .collection('orders')
-//           .doc(orderData['orderId'])
-//           .update({
-//         'delivered': true,
-//         'deliveredCount': FieldValue.increment(1),
-//       });
-
-//       // You might want to show a confirmation message to the user
-//     } catch (error) {
-//       print('Error marking order as delivered: $error');
-//     }
-//   }

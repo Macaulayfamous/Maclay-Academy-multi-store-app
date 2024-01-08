@@ -7,6 +7,7 @@ import 'package:macstore/provider/favorite_provider.dart';
 import 'package:macstore/provider/product_provider.dart';
 import 'package:macstore/provider/size_provider.dart';
 import 'package:macstore/views/screens/widgets/product_models.dart';
+import 'package:custom_rating_bar/custom_rating_bar.dart' as rate;
 
 class ProductDetail extends ConsumerStatefulWidget {
   final dynamic productData;
@@ -20,7 +21,7 @@ class ProductDetail extends ConsumerStatefulWidget {
 class _ProductDetailState extends ConsumerState<ProductDetail> {
   late ValueNotifier<String> descriptionNotifier;
   bool showFullDescription = false;
-  String? _selectedSize;
+
   @override
   void initState() {
     super.initState();
@@ -208,12 +209,16 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                                   ),
                                 ),
                               ),
-                              Image.network(
-                                'https://storage.googleapis.com/codeless-dev.appspot.com/uploads%2Fimages%2Fnn2Ldqjoc2Xp89Y7Wfzf%2F026720e01c32179c8c1b744927c50d03.png',
-                                width: 127,
-                                height: 18,
-                                fit: BoxFit.contain,
-                              )
+                              if (widget.productData
+                                  .data()
+                                  .containsKey('rating'))
+                                rate.RatingBar.readOnly(
+                                  filledIcon: Icons.star,
+                                  emptyIcon: Icons.star_border,
+                                  initialRating: widget.productData['rating'],
+                                  maxRating: 5,
+                                  size: 18,
+                                )
                             ],
                           ),
                         ),
@@ -426,6 +431,7 @@ class _ProductDetailState extends ConsumerState<ProductDetail> {
                     productSize: selectedSize,
                     discount: widget.productData['discountPrice'],
                     description: widget.productData['description'],
+                    storeId: widget.productData['storeId'],
                   );
 
                   print(_cartProvider.getCartItems.values.first.productName);

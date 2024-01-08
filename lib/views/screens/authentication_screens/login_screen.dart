@@ -1,10 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/controllers/auth_controller.dart';
+import 'package:macstore/vendor/authentication/vendor_register_screen.dart';
 import 'package:macstore/views/screens/authentication_screens/register_screen.dart';
 import 'package:macstore/views/screens/main_screen.dart';
 import 'package:macstore/views/screens/widgets/button_widget.dart';
@@ -73,8 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(
                       "Login Your Account",
-                      style: GoogleFonts.getFont(
-                        'Lato',
+                      style: GoogleFonts.roboto(
                         color: Color(0xFF0d120E),
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.2,
@@ -83,8 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Text(
                       'To Explore the world exclusives',
-                      style: GoogleFonts.getFont(
-                        'Lato',
+                      style: GoogleFonts.roboto(
                         color: Color(0xFF0d120E),
                         fontSize: 14,
                         letterSpacing: 0.2,
@@ -177,16 +173,44 @@ class _LoginScreenState extends State<LoginScreen> {
                           print('ff');
                         }
                       },
-                      onChanged: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          return RegisterScreen();
-                        }));
-                      },
                       buttonTitle: 'Sign In',
-                      title: 'Need an account?',
-                      subtitle: 'Sign Up',
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Need an account?',
+                          style: GoogleFonts.roboto(),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Get.to(RegisterScreen());
+                          },
+                          child: Text(
+                            'Create account?',
+                            style: GoogleFonts.roboto(),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Create Vendor account?',
+                          style: GoogleFonts.roboto(),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Get.to(VendorRegisterScreen());
+                          },
+                          child: Text(
+                            'Create account?',
+                            style: GoogleFonts.roboto(),
+                          ),
+                        ),
+                      ],
+                    )
                   ],
                 ),
               ),

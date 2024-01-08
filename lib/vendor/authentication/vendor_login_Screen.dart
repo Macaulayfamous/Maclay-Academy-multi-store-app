@@ -2,63 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/controllers/auth_controller.dart';
-import 'package:macstore/vendor/authentication/vendor_login_Screen.dart';
 import 'package:macstore/vendor/authentication/vendor_register_screen.dart';
-import 'package:macstore/views/screens/authentication_screens/login_screen.dart';
+import 'package:macstore/vendor/controllers/vendor_controller.dart';
+import 'package:macstore/vendor/screens/vendor_main_screen.dart';
+import 'package:macstore/views/screens/authentication_screens/register_screen.dart';
+import 'package:macstore/views/screens/main_screen.dart';
 import 'package:macstore/views/screens/widgets/button_widget.dart';
 import 'package:macstore/views/screens/widgets/custom_text_Field.dart';
 
-class RegisterScreen extends StatefulWidget {
-  RegisterScreen({super.key});
+class VendorLoginScreen extends StatefulWidget {
+  VendorLoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<VendorLoginScreen> createState() => _VendorLoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  final AuthController _authController = AuthController();
-
+class _VendorLoginScreenState extends State<VendorLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  bool _isLoading = false;
+  final VendorController _authController = VendorController();
 
   late String email;
 
-  late String fullName;
-
   late String password;
 
-  registerUser() async {
+  bool _isLoading = false;
+
+  loginUser() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-
-      String res = await _authController.createNewUser(
-        email,
-        fullName,
-        password,
-      );
+      String res = await _authController.loginVendorUserUser(email, password);
 
       setState(() {
         _isLoading = false;
       });
 
       if (res == 'success') {
-        Get.to(LoginScreen());
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text('congratulations account has been created for you..')));
+        setState(() {
+          _isLoading = false;
+        });
+
+        Get.offAll(vendorMainScreen());
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('logged in')));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('something went wrong'),
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('something went wrong'),
+          backgroundColor: Colors.blue,
+        ));
       }
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('please enter all fields')));
     }
   }
 
@@ -79,12 +72,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Create Your Account",
+                      "Login Vendor Account",
                       style: GoogleFonts.roboto(
                         color: Color(0xFF0d120E),
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.2,
-                        fontSize: 23,
+                        fontSize: 18,
                       ),
                     ),
                     Text(
@@ -133,38 +126,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       text: 'enter email',
                     ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Text(
-                        'Full Name',
-                        style: GoogleFonts.getFont(
-                          'Nunito Sans',
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ),
-                    CustomTextField(
-                      onChanged: (value) {
-                        fullName = value;
-                      },
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Enter your Full Name';
-                        } else {
-                          return null;
-                        }
-                      },
-                      label: 'Enter your Full Name',
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Image.asset(
-                          'assets/icons/user.jpeg',
-                          width: 20,
-                          height: 20,
-                        ),
-                      ),
-                      text: 'enter email',
+                    SizedBox(
+                      height: 15,
                     ),
                     Align(
                       alignment: Alignment.topLeft,
@@ -200,30 +163,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       text: 'enter password',
                     ),
+                    SizedBox(
+                      height: 15,
+                    ),
                     ButtonWidgets(
                       isLoading: _isLoading ? true : false,
                       buttonChange: () {
-                        if (_formKey.currentState!.validate()) {
-                          registerUser();
+                        if ((_formKey.currentState!.validate())) {
+                          loginUser();
                         } else {
-                          print('faile');
+                          print('ff');
                         }
                       },
-                      buttonTitle: 'Sign Up',
+                      buttonTitle: 'Sign In',
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Login  account?',
+                          'Need an account?',
                           style: GoogleFonts.roboto(),
                         ),
                         TextButton(
                           onPressed: () {
-                            Get.to(LoginScreen());
+                            Get.to(RegisterScreen());
                           },
                           child: Text(
-                            'Login?',
+                            'Create account?',
                             style: GoogleFonts.roboto(),
                           ),
                         ),
@@ -233,22 +199,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Login vendor account?',
-                          style: GoogleFonts.roboto(
-                            fontSize: 14,
-                            letterSpacing: 0.1,
-                            height: 1.7,
-                          ),
+                          'Create Vendor account?',
+                          style: GoogleFonts.roboto(),
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (context) {
-                              return VendorLoginScreen();
-                            }));
+                            Get.to(VendorRegisterScreen());
                           },
                           child: Text(
-                            'Login',
+                            'Create account?',
                             style: GoogleFonts.roboto(),
                           ),
                         ),
