@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:macstore/controllers/auth_controller.dart';
 import 'package:macstore/vendor/authentication/vendor_login_Screen.dart';
-import 'package:macstore/vendor/authentication/vendor_register_screen.dart';
 import 'package:macstore/views/screens/authentication_screens/login_screen.dart';
 import 'package:macstore/views/screens/widgets/button_widget.dart';
 import 'package:macstore/views/screens/widgets/custom_text_Field.dart';

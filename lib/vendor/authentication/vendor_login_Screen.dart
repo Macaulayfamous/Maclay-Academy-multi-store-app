@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:macstore/controllers/auth_controller.dart';
 import 'package:macstore/vendor/authentication/vendor_register_screen.dart';
 import 'package:macstore/vendor/controllers/vendor_controller.dart';
 import 'package:macstore/vendor/screens/vendor_main_screen.dart';
 import 'package:macstore/views/screens/authentication_screens/register_screen.dart';
-import 'package:macstore/views/screens/main_screen.dart';
 import 'package:macstore/views/screens/widgets/button_widget.dart';
 import 'package:macstore/views/screens/widgets/custom_text_Field.dart';
 
@@ -28,27 +26,38 @@ class _VendorLoginScreenState extends State<VendorLoginScreen> {
   bool _isLoading = false;
 
   loginUser() async {
+    String loginStatus = ''; // Move the variable inside loginUser
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-      String res = await _authController.loginVendorUserUser(email, password);
+
+      Map<String, dynamic> res =
+          await _authController.loginVendorUser(email, password);
 
       setState(() {
         _isLoading = false;
+        loginStatus = res['status'];
       });
 
-      if (res == 'success') {
-        setState(() {
-          _isLoading = false;
-        });
+      if (loginStatus == 'success') {
+        String userRole = res['role'];
 
-        Get.offAll(vendorMainScreen());
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('logged in')));
+        if (userRole == 'vendor') {
+          Get.offAll(vendorMainScreen());
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Logged in as a vendor')));
+        } else {
+          // Handle unexpected role or show an error message
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Invalid user role. Please contact support.'),
+            backgroundColor: Colors.blue,
+          ));
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('something went wrong'),
+          content: Text('Login failed. $loginStatus'),
           backgroundColor: Colors.blue,
         ));
       }

@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:macstore/vendor/authentication/Create_store_screen.dart';
 import 'package:macstore/vendor/authentication/vendor_register_screen.dart';
 
 class VendorController extends GetxController {
@@ -24,7 +23,8 @@ class VendorController extends GetxController {
     if (user == null) {
       Get.off(() => VendorRegisterScreen());
     } else {
-      Get.off(() => CreateStoreScreen());
+      // Check the user role before navigating to the screen
+     
     }
   }
 
@@ -36,13 +36,11 @@ class VendorController extends GetxController {
     String address,
     String companyId,
   ) async {
-    String res = 'some erorr occured';
+    String res = 'some error occurred';
 
     try {
       UserCredential userCredential = await _auth
           .createUserWithEmailAndPassword(email: email, password: password);
-
-      // String downloadUrl = await _uploadImageToStorage(image);
 
       await _firestore.collection('vendors').doc(userCredential.user!.uid).set({
         'companyName': companyName,
@@ -64,19 +62,33 @@ class VendorController extends GetxController {
     return res;
   }
 
-  ///FUNCTION TO LOGIN THE CREATED USER
+ Future<Map<String, dynamic>> loginVendorUser(String email, String password) async {
+  Map<String, dynamic> res = {'status': 'error', 'role': ''};
 
-  Future<String> loginVendorUserUser(String email, String password) async {
-    String res = 'some error occured';
+  try {
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-    try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    DocumentSnapshot userDoc = await _firestore
+        .collection('vendors') // Assuming vendors are stored in a 'vendors' collection
+        .doc(userCredential.user!.uid)
+        .get();
 
-      res = 'success';
-    } catch (e) {
-      res = e.toString();
+    if (userDoc.exists) {
+      res = {
+        'status': 'success',
+        'role': 'vendor', // Set the role as 'buyer' for vendors
+      };
+    } else {
+      res['status'] = 'Invalid user role or user not found.';
     }
-
-    return res;
+  } catch (e) {
+    res['status'] = e.toString();
   }
+
+  return res;
+}
+
 }

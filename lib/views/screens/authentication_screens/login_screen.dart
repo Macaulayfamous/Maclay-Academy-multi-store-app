@@ -26,27 +26,38 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   loginUser() async {
+    String loginStatus = ''; // Move the variable inside loginUser
+
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-      String res = await _authController.loginUser(email, password);
+
+      Map<String, dynamic> res =
+          await _authController.loginUser(email, password);
 
       setState(() {
         _isLoading = false;
+        loginStatus = res['status'];
       });
 
-      if (res == 'success') {
-        setState(() {
-          _isLoading = false;
-        });
+      if (loginStatus == 'success') {
+        String userRole = res['role'];
 
-        Get.offAll(MainScreen());
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('logged in')));
+        if (userRole == 'buyer') {
+          Get.offAll(MainScreen());
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Logged in as a buyer')));
+        } else {
+          // Handle unexpected role or show an error message
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Invalid user role. Please contact support.'),
+            backgroundColor: Colors.blue,
+          ));
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('something went wrong'),
+          content: Text('Login failed. $loginStatus'),
           backgroundColor: Colors.blue,
         ));
       }

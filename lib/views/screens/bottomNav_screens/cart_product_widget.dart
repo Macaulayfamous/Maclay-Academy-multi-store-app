@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
 import 'package:badges/badges.dart' as badges;
 import 'package:macstore/provider/product_provider.dart';
 import 'package:macstore/views/screens/inner_screen/checkout_screen.dart';

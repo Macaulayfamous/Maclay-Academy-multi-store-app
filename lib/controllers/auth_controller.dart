@@ -68,7 +68,7 @@ class AuthController extends GetxController {
 
       // String downloadUrl = await _uploadImageToStorage(image);
 
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+      await _firestore.collection('buyers').doc(userCredential.user!.uid).set({
         'fullName': fullName,
         'profileImage': '',
         'email': email,
@@ -88,18 +88,34 @@ class AuthController extends GetxController {
   }
 
   ///FUNCTION TO LOGIN THE CREATED USER
+Future<Map<String, dynamic>> loginUser(String email, String password) async {
+  Map<String, dynamic> res = {'status': 'error', 'role': ''};
 
-  Future<String> loginUser(String email, String password) async {
-    String res = 'some error occured';
+  try {
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
 
-    try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+    DocumentSnapshot userDoc = await _firestore
+        .collection('buyers') // Assuming buyers are stored in a 'buyers' collection
+        .doc(userCredential.user!.uid)
+        .get();
 
-      res = 'success';
-    } catch (e) {
-      res = e.toString();
+    if (userDoc.exists) {
+      res = {
+        'status': 'success',
+        'role': 'buyer', // Set the role as 'buyer' for buyers
+      };
+    } else {
+      res['status'] = 'Invalid user role or user not found.';
     }
-
-    return res;
+  } catch (e) {
+    res['status'] = e.toString();
   }
+
+  return res;
+}
+
+
 }

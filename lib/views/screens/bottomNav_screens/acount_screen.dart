@@ -148,7 +148,7 @@ class _EditProfilePopupState extends State<EditProfilePopup> {
 
             // Create a reference to the user's document in Firestore
             DocumentReference userRef =
-                FirebaseFirestore.instance.collection('users').doc(userId);
+                FirebaseFirestore.instance.collection('buyers').doc(userId);
 
             // Update the user's data in Firestore
 
@@ -223,7 +223,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   void _setupUserDataStream() {
     // Create a stream of the user data
     Stream<DocumentSnapshot> userDataStream =
-        _firestore.collection('users').doc(_auth.currentUser!.uid).snapshots();
+        _firestore.collection('buyers').doc(_auth.currentUser!.uid).snapshots();
 
     // Listen to the stream and update the UI when there's a change
     userDataStream.listen((DocumentSnapshot userData) {

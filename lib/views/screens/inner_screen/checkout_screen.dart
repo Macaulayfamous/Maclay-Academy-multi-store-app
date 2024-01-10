@@ -89,7 +89,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         // showProgress();
         for (var item in ref.read(cartProvider.notifier).getCartItems.values) {
           DocumentSnapshot userDoc = await _firestore
-              .collection('users')
+              .collection('buyers')
               .doc(_auth.currentUser!.uid)
               .get();
 
@@ -194,7 +194,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void _setupUserDataStream() {
     // Create a stream of the user data
     Stream<DocumentSnapshot> userDataStream =
-        _firestore.collection('users').doc(_auth.currentUser!.uid).snapshots();
+        _firestore.collection('buyers').doc(_auth.currentUser!.uid).snapshots();
 
     // Listen to the stream and update the UI when there's a change
     userDataStream.listen((DocumentSnapshot userData) {
@@ -779,7 +779,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         child: InkWell(
           onTap: () async {
             DocumentSnapshot userDoc = await _firestore
-                .collection('users')
+                .collection('buyers')
                 .doc(_auth.currentUser!.uid)
                 .get();
 
